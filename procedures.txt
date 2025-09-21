@@ -1,0 +1,17 @@
+1.in backend terminal install -npm init -y
+
+SERVER SETUP
+2.we need some pkgs so,in backend terminal install -npm i express mongoose jsonwebtoken bcrypt cookie-parser dotenv cors
+3.in package.json below the "main" code "type": "module"
+4.make -app.js in backend folder (app.js ek andr hi hum express ko initialise krte hai or we create server in app.js)
+5.agar hum chahte hai ki koi sa bhi route hit ho humare server pe toh log humne miljaye uske liye we use npm i morgan and in app.js file
+
+DATABASE SETUP
+6.create db folder in backend folder
+7.in db folder in create db.js
+8.write logic of mongodb connection 
+9.import in app.js 
+
+USER MODEL 
+10.create models folder in backend folder
+11.make user.model.js in this file write userschema for users
