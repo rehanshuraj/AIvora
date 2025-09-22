@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { use } from "react";
 const userSchema =  new mongoose.Schema({
     email:{
         type: String,
@@ -13,12 +15,26 @@ const userSchema =  new mongoose.Schema({
     },
 
     password:{
-        type: String,    
+        type: String,  
+        select : false,  
     }
 })
 
+// Static method to hash password before saving to database 
 userSchema.statics.hashPassword = async function(password){
     return await bcrypt.hash(password, 10);
 }
 
-userSchema.
+// Instance method to compare password for login, compared with hashed password in database
+userSchema.methods.isValidPassword = async function(password){
+    return await bcrypt.compare(password, this.password);
+}
+
+// Instance method to generate JWT token so that user can access protected routes 
+userSchema.methods.generateJWT = function(){
+    return jwt.sign({ email: this.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+}  
+
+const User = mongoose.model('user', userSchema);
+
+export default User;
