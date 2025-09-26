@@ -6,6 +6,8 @@ SERVER SETUP
 4.make -app.js in backend folder (app.js ek andr hi hum express ko initialise krte hai or we create server in app.js)
 5.agar hum chahte hai ki koi sa bhi route hit ho humare server pe toh log humne miljaye uske liye we use npm i morgan and in app.js file
 
+NOTE: hum humsa phele x.routes bnate hai then x.controller
+
 DATABASE SETUP
 6.create db folder in backend folder
 7.in db folder in create db.js
@@ -15,3 +17,16 @@ DATABASE SETUP
 USER MODEL 
 10.create models folder in backend folder
 11.make user.model.js in this file write userschema for users
+
+SERVICE folder
+-in folder we make files for third party interaction like database connection example: like in future is their need to change the database
+-in service folder create user.service.js file 
+-in this file write a logic for user create account using user models from models folder
+
+CONTROLLER
+-user.controller.js 
+-in this file we validate user details through express-validator so to use this install -npm i exxpress-validator
+
+timeline:
+28.12
+56.00
