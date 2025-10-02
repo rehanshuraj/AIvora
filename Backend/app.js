@@ -2,10 +2,11 @@ import express from 'express';
 import morgan from 'morgan';
 import connect from './db/db.js';
 import userRoutes from './routes/user.routes.js';
-
+import cors from 'cors'
 connect();
 const app = express();
 
+app.use(cors()) //to allow cross-origin requests
 app.use(morgan('dev')); //morgan is used to log the requests made to the server
 app.use(express.json());
 app.use(express.urlencoded({extended: true})); //it is used to parse the incoming requests with urlencoded payloads

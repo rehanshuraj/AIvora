@@ -30,3 +30,8 @@ CONTROLLER
 timeline:
 28.12
 56.00
+
+-frontened
+1.install tailwind
+2.install react-router-dom
+3.imstall axios create config folder and make axios.js file and make instance

@@ -1,4 +1,4 @@
-//import userModel from '../models/user.model.js';
+import userModel from '../models/user.model.js';
 import * as userService from '../services/user.service.js';
 import { validationResult } from 'express-validator';
 import redisClient from '../services/redis.service.js';
@@ -35,14 +35,14 @@ export const loginController = async (req,res)=>{
     try {
 
         const {email , password} = req.body;
-        const user = await userModel.findone({email}).select('+password');
+        const user = await userModel.findOne({email}).select('+password');
 
         if(!user){
             return res.status(401).json({
                 errors: 'Invalid credentials'
             })
         }
-        const isMatch = await user.isValidPasswword(password);
+        const isMatch = await user.isValidPassword(password);
 
         if(!isMatch) {
             return res.status(401).json({
@@ -51,7 +51,7 @@ export const loginController = async (req,res)=>{
         }
 
         const token = await user.generateJWT();
-        delete user._doc.password;
+        delete user._doc.password; //password ko response me nahi bhejna mtlab connsole me bhi nahi dikhana inspect krne pr
         res.status(200).json({user,token});
     }
     catch(err){
