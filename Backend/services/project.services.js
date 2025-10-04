@@ -107,5 +107,12 @@ export const updateFileTree = async ({ projectId, fileTree}) =>{
     if(!fileTree){
         throw new Error("fileTree is required")
     }
-    const project
+    const project = await projectModel.findOneAndUpdate({
+        _id: projectId
+    },{
+        fileTree
+    },{
+        new: true
+    })
+    return project;
 }
