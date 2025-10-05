@@ -1,7 +1,7 @@
 import {Router} from 'express';
 import { body } from 'express-validator'; // Import body from express-validator for validation of request body where it validates the name field in the request body to ensure it is not empty.
 import * as projectController from '../controllers/project.controller.js';
-import * as authMiddleware from '../middlewares/auth.middleware.js';
+import * as authMiddleware from '../middleware/auth.middleware.js';
 
 const router = Router();
 
