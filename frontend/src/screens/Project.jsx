@@ -68,7 +68,11 @@ const Project = () => {
 
         axios.put("/projects/add-user", {
             projectId: location.state.project._id,
-            users: Array.from(selectedUserId)
+            users:  Array.from(selectedUserId),
+        }, {
+            headers: {
+                 "Content-Type": "application/json"
+            }
         }).then(res => {
             console.log(res.data)
             setIsModalOpen(false)
@@ -155,7 +159,7 @@ const Project = () => {
         })
 
         axios.get('/users/all').then(res => {
-
+            console.log(res.data)
             setUsers(res.data.users)
 
         }).catch(err => {
