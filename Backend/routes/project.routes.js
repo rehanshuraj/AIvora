@@ -5,7 +5,7 @@ import * as authMiddleware from '../middleware/auth.middleware.js';
 
 const router = Router();
 
-router.post('/https://aivora-backend-gzhc.onrender.com/create',
+router.post('/create',
     authMiddleware.authUser,
     body('name').isString().withMessage('Name is required'),
     projectController.createProject
