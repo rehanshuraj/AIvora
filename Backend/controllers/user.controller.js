@@ -91,33 +91,25 @@ export const logoutController = async (req, res) => {
         res.status(400).send(err.message);
     }
 }
-export const getAllUsersController = async ({ userId }) => {
-  try {
-    // Get all users except the currently logged-in one
-    const users = await userModel.find({ _id: { $ne: userId } }).select("-password");
-    return users;
-  } catch (error) {
-    throw new Error("Error fetching users: " + error.message);
-  }
-};
-// export const getAllUsersController = async (req, res) => {
-//     try {
 
-//         const loggedInUser = await userModel.findOne({
-//             email: req.user.email
-//         })
+export const getAllUsersController = async (req, res) => {
+    try {
 
-//         const allUsers = await userService.getAllUsers({ userId: loggedInUser._id });
+        const loggedInUser = await userModel.findOne({
+            email: req.user.email
+        })
 
-//         return res.status(200).json({
-//             users: allUsers
-//         })
+        const allUsers = await userService.getAllUsers({ userId: loggedInUser._id });
 
-//     } catch (err) {
+        return res.status(200).json({
+            users: allUsers
+        })
 
-//         console.log(err)
+    } catch (err) {
 
-//         res.status(400).json({ error: err.message })
+        console.log(err)
 
-//     }
-// }
+        res.status(400).json({ error: err.message })
+
+    }
+}

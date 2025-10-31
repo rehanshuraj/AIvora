@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true})); //it is used to parse the incoming requests with urlencoded payloads
 app.use('/users', userRoutes); //user routes
 
-app.use('/users', userRoutes);
+// app.use('/users', userRoutes);
 app.use('/projects', projectRoutes);
 
 app.get('/',(req,res)=>{
