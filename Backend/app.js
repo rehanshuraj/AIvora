@@ -36,7 +36,4 @@ app.get('/',(req,res)=>{
     res.send("hello rehanshu")
 })
 
-// ✅ Handle CORS preflight manually (optional but safe)
-app.options('*', cors());
-
 export default app;
