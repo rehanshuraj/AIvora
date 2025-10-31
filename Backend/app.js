@@ -7,7 +7,11 @@ import cors from 'cors'
 connect();
 const app = express();
 
-app.use(cors()) //to allow cross-origin requests
+app.use(cors({
+  origin: 'https://aivora-frontend.onrender.com',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true
+}));
 app.use(morgan('dev')); //morgan is used to log the requests made to the server
 app.use(express.json());
 app.use(express.urlencoded({extended: true})); //it is used to parse the incoming requests with urlencoded payloads
