@@ -8,7 +8,7 @@ connect();
 const app = express();
 // ✅ Allowed origins (both deployed & local)
 const allowedOrigins = [
-  'https://aivora-frontend.onrender.com', // your deployed frontend
+  'https://aivora-jp7z.onrender.com', // your deployed frontend
   'http://localhost:5173' // for local dev (Vite default port)
 ];
 app.use(cors({
