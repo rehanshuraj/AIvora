@@ -20,23 +20,39 @@ const Home = () => {
   const [projectName, setProjectName] = useState("");
   const [project, setProject] = useState([]);
   const [chartData, setChartData] = useState([]);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
   const navigate = useNavigate();
 
   // Create project
-  function createProject(e) {
+  async function createProject(e) {
     e.preventDefault();
-    axios
-      .post("/projects/create", {
-        name: projectName,
-      })
-      .then((res) => {
-        console.log(res);
-        setIsModalOpen(false);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    setErrorMsg(""); // reset any previous error
+    setIsCreating(true);
+
+    try {
+      const res = await axios.post("/projects/create", { name: projectName });
+      console.log(res.data);
+
+      // Refresh project list after successful creation
+      const updatedProjects = await axios.get("/projects/all");
+      setProject(updatedProjects.data.projects || []);
+
+      setIsModalOpen(false);
+      setProjectName("");
+    } catch (error) {
+      console.error("Error creating project:", error);
+
+      // Handle duplicate name or backend validation
+      if (error.response?.status === 400) {
+        setErrorMsg(error.response.data || "Project name must be unique.");
+      } else {
+        setErrorMsg("Something went wrong. Please try again.");
+      }
+    } finally {
+      setIsCreating(false);
+    }
   }
 
   // Fetch projects & calculate monthly collaborator activity
@@ -56,7 +72,6 @@ const Home = () => {
 
         allProjects.forEach((proj) => {
           proj.users?.forEach((user) => {
-            // Use lastActive or createdAt; fallback to random month if not available
             const date = user.lastActive || user.createdAt;
             let monthIndex;
             if (date) monthIndex = dayjs(date).month();
@@ -71,9 +86,7 @@ const Home = () => {
         }));
         setChartData(formatted);
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err) => console.log(err));
   }, []);
 
   return (
@@ -90,7 +103,6 @@ const Home = () => {
 
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-white/40 via-white/20 to-transparent z-0"></div>
-
 
       {/* Floating Card */}
       <motion.div
@@ -180,19 +192,31 @@ const Home = () => {
                 className="border border-gray-300 rounded-md p-2"
                 required
               />
-              <div className="flex justify-end gap-3">
+
+              {/* Inline Error Message */}
+              {errorMsg && (
+                <p className="text-red-500 text-sm -mt-2">{errorMsg}</p>
+              )}
+
+              <div className="flex justify-end gap-3 mt-2">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-gray-300 rounded-md"
+                  className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400 transition-all"
+                  disabled={isCreating}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md"
+                  className={`px-4 py-2 text-white rounded-md ${
+                    isCreating
+                      ? "bg-blue-400 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-500"
+                  } transition-all`}
+                  disabled={isCreating}
                 >
-                  Create
+                  {isCreating ? "Creating..." : "Create"}
                 </button>
               </div>
             </form>
