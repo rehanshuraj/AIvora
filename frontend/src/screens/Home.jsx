@@ -15,27 +15,37 @@ import {
 } from "recharts";
 
 const Home = () => {
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext); // ✅ added setUser for logout
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [project, setProject] = useState([]);
   const [chartData, setChartData] = useState([]);
+  const [totalCollaborators, setTotalCollaborators] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
   const navigate = useNavigate();
 
+  // ✅ Logout function
+  const handleLogout = () => {
+    if (window.confirm("Are you sure you want to log out?")) {
+      localStorage.removeItem("token"); // clear auth token
+      setUser(null); // clear context
+      navigate("/login"); // redirect
+    }
+  };
+
   // Create project
   async function createProject(e) {
     e.preventDefault();
-    setErrorMsg(""); // reset any previous error
+    setErrorMsg("");
     setIsCreating(true);
 
     try {
       const res = await axios.post("/projects/create", { name: projectName });
       console.log(res.data);
 
-      // Refresh project list after successful creation
+      // Refresh project list after creation
       const updatedProjects = await axios.get("/projects/all");
       setProject(updatedProjects.data.projects || []);
 
@@ -43,8 +53,6 @@ const Home = () => {
       setProjectName("");
     } catch (error) {
       console.error("Error creating project:", error);
-
-      // Handle duplicate name or backend validation
       if (error.response?.status === 400) {
         setErrorMsg(error.response.data || "Project name must be unique.");
       } else {
@@ -55,7 +63,7 @@ const Home = () => {
     }
   }
 
-  // Fetch projects & calculate monthly collaborator activity
+  // Fetch projects & calculate collaborator data
   useEffect(() => {
     axios
       .get("/projects/all")
@@ -63,28 +71,42 @@ const Home = () => {
         const allProjects = res.data.projects || [];
         setProject(allProjects);
 
-        // Month labels
         const months = [
           "Jan", "Feb", "Mar", "Apr", "May", "Jun",
           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
         ];
-        const monthlyUsage = new Array(12).fill(0);
+
+        // 🧠 Track unique collaborators globally and per month
+        const uniqueUserIds = new Set();
+        const monthlyUserSets = Array.from({ length: 12 }, () => new Set());
 
         allProjects.forEach((proj) => {
           proj.users?.forEach((user) => {
-            const date = user.lastActive || user.createdAt;
-            let monthIndex;
-            if (date) monthIndex = dayjs(date).month();
-            else monthIndex = Math.floor(Math.random() * 12);
-            monthlyUsage[monthIndex] += 1;
+            const userId =
+              typeof user === "string"
+                ? user
+                : user._id || user.id || user.email || user.username;
+
+            if (userId) {
+              uniqueUserIds.add(userId);
+
+              const date = user.lastActive || user.createdAt;
+              let monthIndex;
+              if (date) monthIndex = dayjs(date).month();
+              else monthIndex = Math.floor(Math.random() * 12);
+
+              monthlyUserSets[monthIndex].add(userId);
+            }
           });
         });
 
         const formatted = months.map((m, i) => ({
           name: m,
-          value: monthlyUsage[i],
+          value: monthlyUserSets[i].size,
         }));
+
         setChartData(formatted);
+        setTotalCollaborators(uniqueUserIds.size);
       })
       .catch((err) => console.log(err));
   }, []);
@@ -114,17 +136,19 @@ const Home = () => {
         <div className="backdrop-blur-2xl bg-white/60 rounded-2xl shadow-2xl border border-white/40 p-6 w-[90%] sm:w-[700px] max-h-[85vh] overflow-y-auto">
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Scope emissions</h2>
+            <h2 className="text-lg font-semibold">Your Dashboard</h2>
+
+            {/* ✅ Logout Button replaces “New” */}
             <button
-              onClick={() => setIsModalOpen(true)}
-              className="px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-500 transition-all"
+              onClick={handleLogout}
+              className="px-4 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg shadow transition-all"
             >
-              New
+              Logout
             </button>
           </div>
 
           <p className="text-sm text-gray-500 mb-4">
-            Scope 1 — Direct emissions
+            Welcome back, {user?._user || "User"}!
           </p>
 
           {/* Projects Section */}
@@ -169,7 +193,7 @@ const Home = () => {
           <div className="flex justify-between items-center mt-4 text-gray-600 text-sm">
             <p>
               <span className="text-xl font-semibold text-gray-800">
-                {chartData.reduce((a, b) => a + b.value, 0)}
+                {totalCollaborators}
               </span>{" "}
               total active collaborators
             </p>
@@ -193,7 +217,6 @@ const Home = () => {
                 required
               />
 
-              {/* Inline Error Message */}
               {errorMsg && (
                 <p className="text-red-500 text-sm -mt-2">{errorMsg}</p>
               )}
