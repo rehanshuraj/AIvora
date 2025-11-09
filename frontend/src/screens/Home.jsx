@@ -175,9 +175,9 @@ const Home = () => {
                     e.stopPropagation(); // prevent project navigation
                     handleExitProject(p._id);
                   }}
-                  className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-full transition"
+                  className="absolute top-2 right-2 p-2 rounded-full transition flex items-center justify-center shadow-[0_0_8px_2px_rgba(200,200,200,0.5)] hover:shadow-[0_0_10px_3px_rgba(180,180,180,0.7)] bg-transparent"
                 >
-                  Exit
+                  <i className="ri-arrow-left-box-fill text-black text-lg"></i>
                 </button>
 
                 {/* Project Info */}
