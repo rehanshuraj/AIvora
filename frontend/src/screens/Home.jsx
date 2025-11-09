@@ -15,7 +15,7 @@ import {
 } from "recharts";
 
 const Home = () => {
-  const { user, setUser } = useContext(UserContext); // ✅ added setUser for logout
+  const { user, setUser } = useContext(UserContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [project, setProject] = useState([]);
@@ -26,12 +26,25 @@ const Home = () => {
 
   const navigate = useNavigate();
 
-  // ✅ Logout function
+  // Logout function
   const handleLogout = () => {
     if (window.confirm("Are you sure you want to log out?")) {
-      localStorage.removeItem("token"); // clear auth token
-      setUser(null); // clear context
-      navigate("/login"); // redirect
+      localStorage.removeItem("token");
+      setUser(null);
+      navigate("/login");
+    }
+  };
+
+  // Exit project 
+  const handleExitProject = async (projectId) => {
+    if (!window.confirm("Do you really want to exit this project?")) return;
+        
+    try {
+      await axios.post(`/projects/${projectId}/exit`);
+      setProject((prev) => prev.filter((p) => p._id !== projectId));
+    } catch (error) {
+      console.error("Error exiting project:", error);
+      alert("Failed to exit project. Try again later.");
     }
   };
 
@@ -76,7 +89,6 @@ const Home = () => {
           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
         ];
 
-        // 🧠 Track unique collaborators globally and per month
         const uniqueUserIds = new Set();
         const monthlyUserSets = Array.from({ length: 12 }, () => new Set());
 
@@ -137,8 +149,6 @@ const Home = () => {
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Your Dashboard</h2>
-
-            {/* ✅ Logout Button replaces “New” */}
             <button
               onClick={handleLogout}
               className="px-4 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg shadow transition-all"
@@ -157,13 +167,26 @@ const Home = () => {
               <motion.div
                 key={p._id}
                 whileHover={{ scale: 1.03 }}
-                onClick={() => navigate(`/project`, { state: { project: p } })}
-                className="p-4 bg-white/70 rounded-lg shadow-md cursor-pointer border border-gray-200 hover:shadow-lg transition-all"
+                className="relative p-4 bg-white/70 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-all cursor-pointer"
               >
-                <h3 className="font-semibold text-gray-800 mb-1">{p.name}</h3>
-                <p className="text-sm text-gray-500 flex items-center gap-1">
-                  <i className="ri-user-line"></i> {p.users.length} Collaborators
-                </p>
+                {/* Exit Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // prevent project navigation
+                    handleExitProject(p._id);
+                  }}
+                  className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-full transition"
+                >
+                  Exit
+                </button>
+
+                {/* Project Info */}
+                <div onClick={() => navigate(`/project`, { state: { project: p } })}>
+                  <h3 className="font-semibold text-gray-800 mb-1">{p.name}</h3>
+                  <p className="text-sm text-gray-500 flex items-center gap-1">
+                    <i className="ri-user-line"></i> {p.users.length} Collaborators
+                  </p>
+                </div>
               </motion.div>
             ))}
 
