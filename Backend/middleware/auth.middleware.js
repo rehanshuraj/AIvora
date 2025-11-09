@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
 import redisClient from "../services/redis.service.js";
+import userModel from "../models/user.model.js";
 
 export const authUser = async (req, res, next) => {
   try {
-    // Safely get token from either cookie or header
     const authHeader = req.headers.authorization;
     const token =
       req.cookies?.token ||
@@ -24,7 +24,14 @@ export const authUser = async (req, res, next) => {
 
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+
+    // ✅ Fetch full user
+    const user = await userModel.findById(decoded.id);
+    if (!user) {
+      return res.status(401).send({ error: "Unauthorized User - Not found" });
+    }
+
+    req.user = user; // full user object with _id, email, etc.
 
     next();
   } catch (error) {

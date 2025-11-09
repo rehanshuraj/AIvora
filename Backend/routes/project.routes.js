@@ -36,4 +36,10 @@ router.put('/update-file-tree',
     projectController.updateFileTree
 )
 
+router.post('/:projectId/exit',
+    authMiddleware.authUser,
+    projectController.exitProject
+);
+
+
 export default router;
