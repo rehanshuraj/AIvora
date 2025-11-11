@@ -26,7 +26,7 @@ const Home = () => {
 
   const navigate = useNavigate();
 
-  // Logout function
+  // Logout
   const handleLogout = () => {
     if (window.confirm("Are you sure you want to log out?")) {
       localStorage.removeItem("token");
@@ -35,10 +35,9 @@ const Home = () => {
     }
   };
 
-  // Exit project 
+  // Exit project
   const handleExitProject = async (projectId) => {
     if (!window.confirm("Do you really want to exit this project?")) return;
-        
     try {
       await axios.post(`/projects/${projectId}/exit`);
       setProject((prev) => prev.filter((p) => p._id !== projectId));
@@ -55,13 +54,9 @@ const Home = () => {
     setIsCreating(true);
 
     try {
-      const res = await axios.post("/projects/create", { name: projectName });
-      console.log(res.data);
-
-      // Refresh project list after creation
+      await axios.post("/projects/create", { name: projectName });
       const updatedProjects = await axios.get("/projects/all");
       setProject(updatedProjects.data.projects || []);
-
       setIsModalOpen(false);
       setProjectName("");
     } catch (error) {
@@ -76,7 +71,7 @@ const Home = () => {
     }
   }
 
-  // Fetch projects & calculate collaborator data
+  // Fetch data
   useEffect(() => {
     axios
       .get("/projects/all")
@@ -101,12 +96,10 @@ const Home = () => {
 
             if (userId) {
               uniqueUserIds.add(userId);
-
               const date = user.lastActive || user.createdAt;
               let monthIndex;
               if (date) monthIndex = dayjs(date).month();
               else monthIndex = Math.floor(Math.random() * 12);
-
               monthlyUserSets[monthIndex].add(userId);
             }
           });
@@ -125,27 +118,37 @@ const Home = () => {
 
   return (
     <main className="relative min-h-screen text-gray-900 font-inter overflow-hidden">
-      {/* Background Video */}
-      <video
+      {/* Background Image */}
+      <img
         className="absolute top-0 left-0 w-full h-full object-cover z-0"
-        src="/vedioes/windmill.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
+        src="/media/sungradiant.jpg"
+        alt="Background"
       />
 
-      {/* Gradient Overlay */}
+      {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-white/40 via-white/20 to-transparent z-0"></div>
 
-      {/* Floating Card */}
+      {/* Floating Dashboard Card */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         className="relative z-10 flex justify-center mt-28"
       >
-        <div className="backdrop-blur-2xl bg-white/60 rounded-2xl shadow-2xl border border-white/40 p-6 w-[90%] sm:w-[700px] max-h-[85vh] overflow-y-auto">
+        <motion.div
+          whileHover={{ rotateX: 5, rotateY: -5, scale: 1.03 }}
+          animate={{
+            y: [0, -8, 0],
+            rotateX: [0, 2, 0],
+            rotateY: [0, -2, 0],
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="relative backdrop-blur-2xl bg-white/60 rounded-2xl shadow-2xl border border-white/40 p-6 w-[90%] sm:w-[700px] max-h-[85vh] overflow-y-auto"
+        >
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Your Dashboard</h2>
@@ -172,7 +175,7 @@ const Home = () => {
                 {/* Exit Button */}
                 <button
                   onClick={(e) => {
-                    e.stopPropagation(); // prevent project navigation
+                    e.stopPropagation();
                     handleExitProject(p._id);
                   }}
                   className="absolute top-2 right-2 p-2 rounded-full transition flex items-center justify-center shadow-[0_0_8px_2px_rgba(200,200,200,0.5)] hover:shadow-[0_0_10px_3px_rgba(180,180,180,0.7)] bg-transparent"
@@ -222,7 +225,12 @@ const Home = () => {
             </p>
             <p>Usage Overview</p>
           </div>
-        </div>
+
+          
+          {/* ✨ Soft Glow Reflection */}
+          <div className="absolute bottom-[-30px] left-1/2 -translate-x-1/2 w-[75%] h-[35px] bg-gradient-to-r from-sky-400/60 via-white/80 to-sky-400/60 rounded-full blur-3xl opacity-90 shadow-[0_0_60px_15px_rgba(100,200,255,0.5)] z-[1]"></div>
+
+        </motion.div>
       </motion.div>
 
       {/* Modal for New Project */}
@@ -239,11 +247,9 @@ const Home = () => {
                 className="border border-gray-300 rounded-md p-2"
                 required
               />
-
               {errorMsg && (
                 <p className="text-red-500 text-sm -mt-2">{errorMsg}</p>
               )}
-
               <div className="flex justify-end gap-3 mt-2">
                 <button
                   type="button"
