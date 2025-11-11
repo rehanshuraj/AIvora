@@ -1,3 +1,6 @@
+// Main Express app setup (imports routes, middleware,
+//  and database connection).
+
 import express from 'express';
 import morgan from 'morgan';
 import connect from './db/db.js';
