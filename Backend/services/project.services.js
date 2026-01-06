@@ -90,7 +90,7 @@ export const addUsersToProject = async ({ projectId, users, userId }) => {
     }, {
         new: true
     })
-    console.log("Updated project users:", updatedProject.users);
+
     return updatedProject
 
 

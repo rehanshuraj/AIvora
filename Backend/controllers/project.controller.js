@@ -1,4 +1,4 @@
-import  projectModel from '../models/project.model.js';
+import projectModel from '../models/project.model.js';
 import * as projectService from '../services/project.services.js';
 import userModel from '../models/user.model.js';
 import { validationResult } from 'express-validator';
@@ -53,12 +53,8 @@ export const getAllProject = async (req, res) => {
 }
 
 export const addUserToProject = async (req, res) => {
-    
-
     const errors = validationResult(req);
-    console.log("REQ.BODY:", req.body);
-    console.log("projectId:", req.body.projectId);
-    console.log("users:", req.body.users);
+
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
@@ -135,49 +131,3 @@ export const updateFileTree = async (req, res) => {
     }
 
 }
-
-// ✅ Exit Project Controller (Safe + Error-handled)
-export const exitProject = async (req, res) => {
-  try {
-    const { projectId } = req.params;
-
-    // 🛡 Ensure req.user is defined
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ message: "Unauthorized: user not found in request" });
-    }
-
-    const userId = req.user._id;
-
-    // 🛡 Check if project exists
-    const project = await projectModel.findById(projectId);
-    if (!project) {
-      return res.status(404).json({ message: "Project not found" });
-    }
-
-    // 🛡 Ensure project.users exists and is an array
-    if (!Array.isArray(project.users)) {
-      return res.status(400).json({ message: "Invalid project data: users list missing" });
-    }
-
-    // Check if user is part of this project
-    const isMember = project.users.some(
-      (u) => u && u.toString() === userId.toString()
-    );
-
-    if (!isMember) {
-      return res.status(403).json({ message: "You are not a collaborator of this project" });
-    }
-
-    //  Remove user from collaborators safely
-    project.users = project.users.filter(
-      (u) => u && u.toString() !== userId.toString()
-    );
-
-    await project.save();
-
-    return res.status(200).json({ message: "Exited project successfully" });
-  } catch (error) {
-    console.error("Error exiting project:", error);
-    return res.status(500).json({ message: error.message || "Server error while exiting project" });
-  }
-};
