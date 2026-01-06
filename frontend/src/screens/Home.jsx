@@ -1,282 +1,209 @@
-import React, { useContext, useState, useEffect } from "react";
-import { UserContext } from "../context/user.context";
-import axios from "../config/axios";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import dayjs from "dayjs";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import React, { useContext, useState } from 'react'
+import { UserContext } from '../context/user.context'
+import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import axios from '../config/axios'
+import CreateProjectModal from "../components/CreateProjectModal";
 
 const Home = () => {
-  const { user, setUser } = useContext(UserContext);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [projectName, setProjectName] = useState("");
-  const [project, setProject] = useState([]);
-  const [chartData, setChartData] = useState([]);
-  const [totalCollaborators, setTotalCollaborators] = useState(0);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
 
-  const navigate = useNavigate();
+    const { user,setUser } = useContext(UserContext)
+    
 
-  // Logout
-  const handleLogout = () => {
-    if (window.confirm("Are you sure you want to log out?")) {
-      localStorage.removeItem("token");
-      setUser(null);
-      navigate("/login");
-    }
-  };
 
-  // Exit project
-  const handleExitProject = async (projectId) => {
-    if (!window.confirm("Do you really want to exit this project?")) return;
-    try {
-      await axios.post(`/projects/${projectId}/exit`);
-      setProject((prev) => prev.filter((p) => p._id !== projectId));
-    } catch (error) {
-      console.error("Error exiting project:", error);
-      alert("Failed to exit project. Try again later.");
-    }
-  };
+    const [isCreateOpen,setIsCreateOpen]=useState(false);
+    const [projectName,setProjectName] = useState(null);
+    const [project,setProject] = useState([]);
 
-  // Create project
-  async function createProject(e) {
-    e.preventDefault();
-    setErrorMsg("");
-    setIsCreating(true);
+    const navigate = useNavigate()
+    
+    async function createProject(e){
+      e.preventDefault();
 
-    try {
-      await axios.post("/projects/create", { name: projectName });
-      const updatedProjects = await axios.get("/projects/all");
-      setProject(updatedProjects.data.projects || []);
-      setIsModalOpen(false);
-      setProjectName("");
-    } catch (error) {
-      console.error("Error creating project:", error);
-      if (error.response?.status === 400) {
-        setErrorMsg(error.response.data || "Project name must be unique.");
-      } else {
-        setErrorMsg("Something went wrong. Please try again.");
+      //safety check(frontend validation)
+      if(!projectName.trim()){
+        alert("project name required")
+        return;
       }
-    } finally {
-      setIsCreating(false);
-    }
-  }
-
-  // Fetch data
-  useEffect(() => {
-    axios
-      .get("/projects/all")
-      .then((res) => {
-        const allProjects = res.data.projects || [];
-        setProject(allProjects);
-
-        const months = [
-          "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-        ];
-
-        const uniqueUserIds = new Set();
-        const monthlyUserSets = Array.from({ length: 12 }, () => new Set());
-
-        allProjects.forEach((proj) => {
-          proj.users?.forEach((user) => {
-            const userId =
-              typeof user === "string"
-                ? user
-                : user._id || user.id || user.email || user.username;
-
-            if (userId) {
-              uniqueUserIds.add(userId);
-              const date = user.lastActive || user.createdAt;
-              let monthIndex;
-              if (date) monthIndex = dayjs(date).month();
-              else monthIndex = Math.floor(Math.random() * 12);
-              monthlyUserSets[monthIndex].add(userId);
-            }
-          });
+      try{
+        const res=await axios.post("projects/create",{
+          name:projectName,
         });
-
-        const formatted = months.map((m, i) => ({
-          name: m,
-          value: monthlyUserSets[i].size,
-        }));
-
-        setChartData(formatted);
-        setTotalCollaborators(uniqueUserIds.size);
+        console.log(res.data);
+        alert("project created successfully");
+      }
+      catch(error){
+        //backend error (like duplicate project name)
+        if(error.response){
+          console.error(error.reponse.data);
+          alert(error.response.data); //like project name must be unique
+        }
+        else{
+          console.error(error);
+          alert("something went wrong.try again later");
+        }
+      }
+    }
+    useEffect(()=>{
+      axios.get('/projects/all').then((res)=>{
+        setProject(res.data.projects)
+      }).catch(err=>{
+        console.log(err)
       })
-      .catch((err) => console.log(err));
-  }, []);
+    },[user])//runs only once on page load
 
-  return (
-    <main className="relative min-h-screen text-gray-900 font-inter overflow-hidden">
-      {/* Background Image */}
-      <img
-        className="absolute top-0 left-0 w-full h-full object-cover z-0"
-        src="/media/sungradiant.jpg"
-        alt="Background"
-      />
+    //handle logout
+    const handleLogout = async ()=>{
+      if(window.confirm("Are you sure you want to logout?")){
+        await axios.post("/users/logout");
+        localStorage.removeItem("token");
+        setUser(null);
+        navigate("/Login");
+      }
+    };
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-white/40 via-white/20 to-transparent z-0"></div>
+    // Dummy UI data (replace later with real data)
+    const buildEvents = [
+        {
+            id: 1,
+            actor: "Rehan",
+            action: "created a new project",
+            target: "PR5",
+            time: "2 min ago"
+        },
+        {
+            id: 2,
+            actor: "Diya",
+            action: "joined project",
+            target: "PR9",
+            time: "10 min ago"
+        },
+        {
+            id: 3,
+            actor: "Rehan",
+            action: "created file",
+            target: "index.js",
+            time: "30 min ago"
+        }
+    ]
 
-      {/* Floating Dashboard Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="relative z-10 flex justify-center mt-28"
-      >
-        <motion.div
-          whileHover={{ rotateX: 5, rotateY: -5, scale: 1.03 }}
-          animate={{
-            y: [0, -8, 0],
-            rotateX: [0, 2, 0],
-            rotateY: [0, -2, 0],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="relative backdrop-blur-2xl bg-white/60 rounded-2xl shadow-2xl border border-white/40 p-6 w-[90%] sm:w-[700px] max-h-[85vh] overflow-y-auto"
-        >
-          {/* Header */}
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Your Dashboard</h2>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg shadow transition-all"
-            >
-              Logout
-            </button>
-          </div>
+    const projects = [
+        { id: 1, name: "PR5", collaborators: 1 },
+        { id: 2, name: "PR9", collaborators: 1 }
+    ]
 
-          <p className="text-sm text-gray-500 mb-4">
-            Welcome back, {user?._user || "User"}!
-          </p>
+    return (
+        <main className="h-screen flex bg-gray-100">
 
-          {/* Projects Section */}
-          <div className="grid sm:grid-cols-2 gap-4 mb-6">
-            {project.map((p) => (
-              <motion.div
-                key={p._id}
-                whileHover={{ scale: 1.03 }}
-                className="relative p-4 bg-white/70 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-all cursor-pointer"
-              >
-                {/* Exit Button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleExitProject(p._id);
-                  }}
-                  className="absolute top-2 right-2 p-2 rounded-full transition flex items-center justify-center shadow-[0_0_8px_2px_rgba(200,200,200,0.5)] hover:shadow-[0_0_10px_3px_rgba(180,180,180,0.7)] bg-transparent"
-                >
-                  <i className="ri-arrow-left-box-fill text-black text-lg"></i>
-                </button>
+            {/* ================= Sidebar ================= */}
+            <aside className="w-56 bg-white border-r p-4 flex flex-col gap-4">
+                <h1 className="text-xl font-bold">AIvora</h1>
 
-                {/* Project Info */}
-                <div onClick={() => navigate(`/project`, { state: { project: p } })}>
-                  <h3 className="font-semibold text-gray-800 mb-1">{p.name}</h3>
-                  <p className="text-sm text-gray-500 flex items-center gap-1">
-                    <i className="ri-user-line"></i> {p.users.length} Collaborators
-                  </p>
+                <nav className="flex flex-col gap-2 text-sm">
+                    <button className="text-left px-3 py-2 rounded hover:bg-gray-200 font-medium">
+                        Dashboard
+                    </button>
+                    <button className="text-left px-3 py-2 rounded hover:bg-gray-200">
+                        Projects
+                    </button>
+                    <button className="text-left px-3 py-2 rounded hover:bg-gray-200">
+                        Friends
+                    </button>
+                    <button className="text-left px-3 py-2 rounded hover:bg-gray-200">
+                        Profile
+                    </button>
+                </nav>
+
+                <div className="mt-auto flex flex-col gap-3">
+
+                {/* User Info */}
+              <div className="text-sm text-gray-500">
+                    Logged in as <br />
+                    <span className="font-medium">{user?.email}</span>
                 </div>
-              </motion.div>
-            ))}
 
-            {/* Add Project Button */}
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100 transition-all flex items-center justify-center"
-            >
-              + New Project
-            </button>
-          </div>
-
-          {/* Chart Section */}
-          <div className="w-full h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" fill="#3b82f6" radius={[5, 5, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Summary Section */}
-          <div className="flex justify-between items-center mt-4 text-gray-600 text-sm">
-            <p>
-              <span className="text-xl font-semibold text-gray-800">
-                {totalCollaborators}
-              </span>{" "}
-              total active collaborators
-            </p>
-            <p>Usage Overview</p>
-          </div>
-
-          
-          {/* ✨ Soft Glow Reflection */}
-          <div className="absolute bottom-[-30px] left-1/2 -translate-x-1/2 w-[75%] h-[35px] bg-gradient-to-r from-sky-400/60 via-white/80 to-sky-400/60 rounded-full blur-3xl opacity-90 shadow-[0_0_60px_15px_rgba(100,200,255,0.5)] z-[1]"></div>
-
-        </motion.div>
-      </motion.div>
-
-      {/* Modal for New Project */}
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-20">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] sm:w-[400px]">
-            <h2 className="text-lg font-semibold mb-4">Create New Project</h2>
-            <form onSubmit={createProject} className="flex flex-col gap-3">
-              <input
-                type="text"
-                placeholder="Project Name"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                className="border border-gray-300 rounded-md p-2"
-                required
-              />
-              {errorMsg && (
-                <p className="text-red-500 text-sm -mt-2">{errorMsg}</p>
-              )}
-              <div className="flex justify-end gap-3 mt-2">
+                {/* Logout Button */}
                 <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400 transition-all"
-                  disabled={isCreating}
+                    onClick={handleLogout}
+                    className="w-full text-left px-3 py-2 text-sm rounded border border-red-300 text-red-600 hover:bg-red-50"
                 >
-                  Cancel
+                    Logout
                 </button>
-                <button
-                  type="submit"
-                  className={`px-4 py-2 text-white rounded-md ${
-                    isCreating
-                      ? "bg-blue-400 cursor-not-allowed"
-                      : "bg-blue-600 hover:bg-blue-500"
-                  } transition-all`}
-                  disabled={isCreating}
-                >
-                  {isCreating ? "Creating..." : "Create"}
-                </button>
+
               </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </main>
-  );
-};
 
-export default Home;
+            </aside>
+
+            {/* ================= Build Stream ================= */}
+            <section className="flex-1 p-6 overflow-y-auto">
+                <h2 className="text-xl font-semibold mb-4">Build Stream</h2>
+
+                <div className="flex flex-col gap-4">
+                    {buildEvents.map(event => (
+                        <div
+                            key={event.id}
+                            className="bg-white p-4 rounded-md border hover:shadow-sm transition"
+                        >
+                            <p className="text-sm">
+                                <span className="font-semibold">{event.actor}</span>{" "}
+                                {event.action}{" "}
+                                <span className="font-semibold">{event.target}</span>
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">{event.time}</p>
+
+                            <div className="mt-3 flex gap-3">
+                                <button className="text-xs px-3 py-1 border rounded hover:bg-gray-100">
+                                    View
+                                </button>
+                                <button className="text-xs px-3 py-1 border rounded hover:bg-gray-100">
+                                    Open Project
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* ================= Projects Panel ================= */}
+            <aside className="w-72 bg-white border-l p-4">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-semibold">Your Projects</h3>
+                    <button
+                        onClick={()=>setIsCreateOpen(true)}
+                        className="text-sm px-3 py-1 border rounded hover:bg-gray-100"
+                    >
+                        + New
+                    </button>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                    {projects.map(project => (
+                        <div
+                            key={project.id}
+                            onClick={() => navigate("/project")}
+                            className="cursor-pointer p-3 border rounded hover:bg-gray-100"
+                        >
+                            <h4 className="font-medium">{project.name}</h4>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Collaborators: {project.collaborators}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            </aside>
+
+
+            {/* ================= Create Project Modal ================= */}
+            <CreateProjectModal
+              isOpen={isCreateOpen}
+              onClose={() => setIsCreateOpen(false)}
+              projectName={projectName}
+              setProjectName={setProjectName}
+              onSubmit={createProject}
+            />
+
+        </main>
+    )
+}
+
+export default Home
