@@ -3,6 +3,8 @@ import * as userService from '../services/user.service.js';
 import { validationResult } from 'express-validator';
 import redisClient from '../services/redis.service.js';
 
+import cloudinary from "../config/cloudinary.js";
+
 
 export const createUserController = async (req, res) => {
 
@@ -128,5 +130,35 @@ export const getAllUsersController = async (req, res) => {
 
         res.status(400).json({ error: err.message })
 
+    }
+}
+
+export const uploadAvatar = async (req,res)=>{
+    try{
+        //file check
+        if(!req.file){
+            return res.status(400).json({message:"No File Uploaded"});
+        }
+        //convert buffer -> base64
+        const filestr =`data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+        
+        //upload to cloudinary
+        const uploadRes=await cloudinary.uploader.upload(filestr,{
+            folder:"avatars",
+        });
+
+        //updating user db
+        const user= await userModel.findByIdAndUpdate(
+            req.user._id,
+            { avatar:uploadRes.secure_url},
+            {new:true}
+        );
+
+        res.json({
+            message:"Avatar updated",
+            avatar:user.avatar,
+        });
+    }catch(err){
+       res.status(500).json({message: err.message});
     }
 }

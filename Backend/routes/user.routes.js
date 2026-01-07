@@ -2,7 +2,8 @@ import { Router } from 'express';
 import * as userController from '../controllers/user.controller.js';
 import { body } from 'express-validator';
 import * as authMiddleware from '../middleware/auth.middleware.js';
-
+import { uploadAvatar } from '../controllers/user.controller.js';
+import upload from '../middleware/upload.middleware.js';
 const router = Router();
 
 
@@ -17,7 +18,7 @@ router.post('/login',
     body('password').isLength({ min: 3 }).withMessage('Password must be at least 3 characters long'),
     userController.loginController);
 
-router.get('/profile', authMiddleware.authUser, userController.profileController);
+
 
 
 router.post('/logout', userController.logoutController);
@@ -25,5 +26,10 @@ router.post('/logout', userController.logoutController);
 
 router.get('/all', authMiddleware.authUser, userController.getAllUsersController);
 
+// profile update routes
+router.get('/profile', authMiddleware.authUser, userController.profileController);
 
+// router.post('auth/github',)
+// router.post('auth/google',)
+router.post('/avatar', authMiddleware.authUser, upload.single("avatar"),uploadAvatar);
 export default router;

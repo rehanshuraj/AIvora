@@ -1,0 +1,27 @@
+⚙️ main.jsx — Entry Point
+
+🧩 ReactDOM.createRoot() → Mounts app to <div id="root"> in index.html.
+
+🔍 <React.StrictMode> → Warns about potential coding issues (dev mode only).
+
+🌐 <BrowserRouter> → Enables page navigation (React Router).
+
+👥 <UserProvider> → Shares global user data across the app.
+
+🧠 <App /> → Loads main UI structure (routes, pages, layout).
+
+🎨 App.jsx — Main UI & Routing
+
+📜 Defines what user sees (pages, layout, navigation).
+
+🧭 Contains <Routes> & <Route> for page navigation.
+
+🔐 Uses components like <ProtectedRoute> for login-protected pages.
+
+🧱 Adds shared UI (e.g., Navbar, Footer).
+
+🎯 Central hub connecting all screens (Dashboard, Login, etc.).
+
+✅ In short:
+main.jsx = starts & wraps the app 🔌
+App.jsx = displays & manages UI 🖥️
