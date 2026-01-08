@@ -202,7 +202,7 @@ const Home = () => {
           {project.map((p) => (
             <div
               key={p._id}
-              onClick={() => navigate("/project")}
+              onClick={() => navigate(`/project/${p._id}`)}
               className="cursor-pointer p-3 border rounded hover:bg-gray-100"
             >
               <h4 className="font-medium">{p.name}</h4>
@@ -212,7 +212,7 @@ const Home = () => {
             </div>
           ))}
         </div>
-      </aside>
+      </aside>  
 
       {/* ================= Create Project Modal ================= */}
       <CreateProjectModal

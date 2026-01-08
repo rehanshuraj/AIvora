@@ -162,3 +162,14 @@ export const uploadAvatar = async (req,res)=>{
        res.status(500).json({message: err.message});
     }
 }
+export const updateProfile = async (req, res) => {
+  const { name, bio } = req.body;
+
+  const user = await userModel.findByIdAndUpdate(
+    req.user._id,
+    { name, bio },
+    { new: true }
+  );
+
+  res.json(user);
+};

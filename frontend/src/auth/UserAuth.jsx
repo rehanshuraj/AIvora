@@ -4,25 +4,27 @@ import { UserContext } from "../context/user.context";
 
 const UserAuth = ({ children }) => {
   const { user, setUser } = useContext(UserContext);
-  const [loading, setLoading] = useState(true);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const location = useLocation();
-  const token = localStorage.getItem("token");
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
-    if (savedUser && !user) {
+    const token = localStorage.getItem("token");
+
+    if (token && savedUser && !user) {
       setUser(JSON.parse(savedUser));
     }
-    setLoading(false);
+
+    setCheckingAuth(false);
   }, [user, setUser]);
 
-  if (loading) return null;
+  // ⏳ Wait until auth check completes
+  if (checkingAuth) {
+    return null; // or loader
+  }
 
-  // Avoid redirecting while already on login/register page
-  if (
-    !user &&
-    !["/login", "/register"].includes(location.pathname)
-  ) {
+  // ❌ Redirect only AFTER auth check
+  if (!user && !["/login", "/register"].includes(location.pathname)) {
     return <Navigate to="/login" replace />;
   }
 

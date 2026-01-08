@@ -28,7 +28,7 @@ router.get('/all', authMiddleware.authUser, userController.getAllUsersController
 
 // profile update routes
 router.get('/profile', authMiddleware.authUser, userController.profileController);
-
+router.put('/users/update',authMiddleware.authUser,userController.updateProfile)
 // router.post('auth/github',)
 // router.post('auth/google',)
 router.post('/avatar', authMiddleware.authUser, upload.single("avatar"),uploadAvatar);
